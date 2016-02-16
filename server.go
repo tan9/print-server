@@ -24,12 +24,12 @@ var upgrader = websocket.Upgrader{
 }
 
 type Message struct {
-	Id string
+	Id   string
 	Body string
 }
 
 type Response struct {
-	Id string `json:"id"`
+	Id      string `json:"id"`
 	Success bool `json:"success"`
 	Message string `json:"message"`
 }
@@ -55,7 +55,6 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		log.Printf("recv: %s", m.Id)
-
 
 		pdf, err := base64.StdEncoding.DecodeString(m.Body)
 		if (err != nil) {
