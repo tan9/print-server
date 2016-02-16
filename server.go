@@ -6,6 +6,11 @@ import (
 	"log"
 	"net/http"
 
+	"encoding/json"
+	"encoding/base64"
+
+	"io/ioutil"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -18,6 +23,17 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+type Message struct {
+	Id string
+	Body string
+}
+
+type Response struct {
+	Id string `json:"id"`
+	Success bool `json:"success"`
+	Message string `json:"message"`
+}
+
 func echo(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -26,13 +42,31 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 	for {
-		mt, message, err := c.ReadMessage()
+		_, message, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
-		log.Printf("recv: %s", message)
-		err = c.WriteMessage(mt, message)
+
+		var m Message
+		err = json.Unmarshal(message, &m)
+		if err != nil {
+			log.Println("unmarshal:", err)
+			break
+		}
+		log.Printf("recv: %s", m.Id)
+
+
+		pdf, err := base64.StdEncoding.DecodeString(m.Body)
+		if (err != nil) {
+			log.Println("decoding:", err)
+			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			break
+		}
+
+		err = ioutil.WriteFile("xx.pdf", pdf, 0644);
+
+		err = c.WriteJSON(Response{Id: m.Id, Success: true})
 		if err != nil {
 			log.Println("write:", err)
 			break
