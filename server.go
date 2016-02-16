@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 
 	"io/ioutil"
+	"os/exec"
 
 	"github.com/gorilla/websocket"
 )
@@ -44,26 +45,48 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := c.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			log.Fatal("read:", err)
 			break
 		}
 
 		var m Message
 		err = json.Unmarshal(message, &m)
 		if err != nil {
-			log.Println("unmarshal:", err)
+			log.Fatal("unmarshal:", err)
 			break
 		}
 		log.Printf("recv: %s", m.Id)
 
 		pdf, err := base64.StdEncoding.DecodeString(m.Body)
 		if (err != nil) {
-			log.Println("decoding:", err)
+			log.Fatal("decoding:", err)
 			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
 			break
 		}
 
-		err = ioutil.WriteFile("xx.pdf", pdf, 0644);
+		f, err := ioutil.TempFile("", "print-server-pdf-");
+		l, err := f.Write(pdf);
+		if err != nil {
+			log.Fatal("write file:", err)
+			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			break
+		}
+		log.Printf("write: %s of %d bytes", f.Name(), l)
+
+		cmd := exec.Command("C:/Program Files (x86)/Foxit Software/Foxit Reader/FoxitReader.exe", "/p", f.Name())
+		err = cmd.Start()
+		if err != nil {
+			log.Fatal("start cmd:", err)
+			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			break
+		}
+		log.Printf("foxit reader printing...")
+		err = cmd.Wait()
+		if err != nil {
+			log.Fatal("print:", err)
+			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			break
+		}
 
 		err = c.WriteJSON(Response{Id: m.Id, Success: true})
 		if err != nil {
