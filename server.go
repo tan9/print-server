@@ -45,21 +45,21 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := c.ReadMessage()
 		if err != nil {
-			log.Fatal("read:", err)
+			log.Println("read:", err)
 			break
 		}
 
 		var m Message
 		err = json.Unmarshal(message, &m)
 		if err != nil {
-			log.Fatal("unmarshal:", err)
+			log.Println("unmarshal:", err)
 			break
 		}
 		log.Printf("recv: %s", m.Id)
 
 		pdf, err := base64.StdEncoding.DecodeString(m.Body)
 		if (err != nil) {
-			log.Fatal("decoding:", err)
+			log.Println("decoding:", err)
 			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
 			break
 		}
@@ -67,7 +67,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		f, err := ioutil.TempFile("", "print-server-pdf-");
 		l, err := f.Write(pdf);
 		if err != nil {
-			log.Fatal("write file:", err)
+			log.Println("write file:", err)
 			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
 			break
 		}
@@ -76,14 +76,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		cmd := exec.Command("C:/Program Files (x86)/Foxit Software/Foxit Reader/FoxitReader.exe", "/p", f.Name())
 		err = cmd.Start()
 		if err != nil {
-			log.Fatal("start cmd:", err)
+			log.Println("start cmd:", err)
 			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
 			break
 		}
 		log.Printf("foxit reader printing...")
 		err = cmd.Wait()
 		if err != nil {
-			log.Fatal("print:", err)
+			log.Println("print:", err)
 			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
 			break
 		}
