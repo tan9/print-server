@@ -107,6 +107,7 @@ func main() {
 	log.SetFlags(0)
 	http.HandleFunc("/print", print)
 	http.HandleFunc("/", home)
+	log.Printf("Server started-up and listening.")
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
 
