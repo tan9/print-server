@@ -29,19 +29,23 @@ Server will respond with either messages:
 In case of successful print:
 
 ```json
+{
   "id": "CORELEATION_ID",
   "success": true,
   "message": ""
-
+}
 ```
+
 > *Note:* The return code of Foxit Reader process is alway 0. I can't found a simple way to make sure if document be printed successfully.
 
 In case of failed to print:
 
 ```json
+{
   "id": "CORELEATION_ID",
   "success": false,
   "message": "Fail reason..."
+}
 ```
 
 ## Development
