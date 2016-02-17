@@ -74,7 +74,7 @@ func print(w http.ResponseWriter, r *http.Request) {
 		f.Close()
 		log.Printf("write: %s of %d bytes", f.Name(), l)
 
-		cmd := exec.Command("C:/Program Files (x86)/Foxit Software/Foxit Reader/FoxitReader.exe", "/p", f.Name())
+		cmd := exec.Command("C:/Program Files (x86)/Foxit Software/Foxit Reader/Foxit Reader.exe", "/p", f.Name())
 		err = cmd.Start()
 		if err != nil {
 			log.Println("start cmd:", err)
