@@ -47,4 +47,4 @@ In case of failed to print:
 ## Development
 1. Install Go as described [here](https://golang.org/doc/install).
 2. Install [Gorilla WebSocket](https://github.com/gorilla/websocket) using `go get github.com/gorilla/websocket`.
-3. Run `go run server.go` to start server.
+3. Run `go run print-server.go` to start server.
