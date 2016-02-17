@@ -71,6 +71,7 @@ func print(w http.ResponseWriter, r *http.Request) {
 			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
 			break
 		}
+		f.Close()
 		log.Printf("write: %s of %d bytes", f.Name(), l)
 
 		cmd := exec.Command("C:/Program Files (x86)/Foxit Software/Foxit Reader/FoxitReader.exe", "/p", f.Name())
