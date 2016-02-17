@@ -84,11 +84,12 @@ func print(w http.ResponseWriter, r *http.Request) {
 		log.Printf("foxit reader printing...")
 		err = cmd.Wait()
 		if err != nil {
-			log.Println("print:", err)
+			log.Println("print failed:", err)
 			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
 			break
 		}
 
+		log.Println("print success:", m.Id)
 		err = c.WriteJSON(Response{Id: m.Id, Success: true})
 		if err != nil {
 			log.Println("write:", err)
