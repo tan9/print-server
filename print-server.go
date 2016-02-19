@@ -81,7 +81,7 @@ func print(w http.ResponseWriter, r *http.Request) {
 			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
 			break
 		}
-		log.Printf("foxit reader printing...")
+		log.Printf("printing...")
 		err = cmd.Wait()
 		if err != nil {
 			log.Println("print failed:", err)
