@@ -5,27 +5,22 @@ If $CmdLine[0] = 0 Then Exit (1)
 
 $FnToPrt = $CmdLine[1]
 
-ShellExecute("AcroRD32.exe", "/h /p" & " """ & $FnToPrt & """", "", "", @SW_HIDE )
+ShellExecute("AcroRd32.exe", "/h /p" & " """ & $FnToPrt & """", "", "", @SW_HIDE )
 $OK = ProcessWait("AcroRd32.exe", 20)
-if $OK = 0 Then
-    msgbox(0, "", "Coudn't start process")
-    ;return 0
-    exit (2)
-endif
+If $OK = 0 Then
+    Exit (2)
+EndIf
 
-GLOBAL $PID = WinGetProcess ("Reader")
-GLobal $handle = WinGethandle ("Reader")
-$timer = 0
+Global $PID = WinGetProcess ("Reader")
+Global $Handle = WinGetHandle ("Reader")
+$Timer = 0
 Do
-    sleep(1000)
-    $timer +=+1
-    if Winexists('[CLASS:PrintUI_PrinterQueue]', "") = 0 then
-        ;msgbox(0,"","Printing finished")
-        WinClose($handle)
-    endif
-    if $timer = 60 then
-        msgbox(0, "", "Timeout")
-        ;return 0
-        exitloop
-    endif
- until ProcessExists($PID) = 0
+    Sleep (1000)
+    $Timer += 1
+    If WinExists('[CLASS:PrintUI_PrinterQueue]', "") = 0 Then
+        WinClose($Handle)
+    EndIf
+    If $Timer = 60 Then
+        ExitLoop
+    EndIf
+Until ProcessExists ($PID) = 0
