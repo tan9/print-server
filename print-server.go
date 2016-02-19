@@ -104,7 +104,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	flag.Parse()
-	log.SetFlags(0)
+	log.SetFlags(log.Ldate + log.Ltime + log.Lmicroseconds)
 	http.HandleFunc("/print", print)
 	http.HandleFunc("/", home)
 	log.Printf("Server started-up and listening.")
