@@ -31,6 +31,6 @@ $szTopic = "Control"
 $szCommand = '[FilePrintSilent("' & $PdfFile & '")][AppExit()]'
 $res = _DDEMLClient_Execute($szService, $szTopic, $szCommand)
 If $res <> 0x00000001 Then
-	ConsoleWrite('Something wrong when printing.' & @CRLF)
+    ConsoleWrite('Something wrong when printing.' & @CRLF)
     Exit($EXIT_FAILED_TO_PRINT)
 EndIf
