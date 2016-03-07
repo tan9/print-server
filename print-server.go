@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 
 	"io/ioutil"
+	"os"
 	"os/exec"
 
 	"github.com/gorilla/websocket"
@@ -100,14 +101,25 @@ func print(w http.ResponseWriter, r *http.Request) {
 
 func home(w http.ResponseWriter, r *http.Request) {
 	homeTemplate.Execute(w, nil)
+	log.Println("home page served.")
 }
 
 func main() {
 	flag.Parse()
+
+	f, err := os.OpenFile("print-server.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
 	log.SetFlags(log.Ldate + log.Ltime + log.Lmicroseconds)
+
 	http.HandleFunc("/print", print)
 	http.HandleFunc("/", home)
-	log.Printf("Server started-up and listening.")
+
+	log.Printf("Server started-up and listening at %s.", *addr)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
 
