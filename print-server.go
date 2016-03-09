@@ -14,6 +14,7 @@ import (
 	"os/exec"
 
 	"github.com/gorilla/websocket"
+	"github.com/kardianos/osext"
 	"github.com/kardianos/service"
 )
 
@@ -61,7 +62,12 @@ func (p *program) Start(s service.Service) error {
 func (p *program) run() {
 	logger.Infof("I'm running %v.", service.Platform())
 
-	f, err := os.OpenFile("print-server.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	exePath, err := osext.ExecutableFolder()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	f, err := os.OpenFile(exePath + "/print-server.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -123,7 +129,13 @@ func print(w http.ResponseWriter, r *http.Request) {
 		f.Close()
 		log.Printf("write: %s of %d bytes", f.Name(), l)
 
-		cmd := exec.Command("print.exe", f.Name())
+		exePath, err := osext.ExecutableFolder()
+		if err != nil {
+			log.Println("failed to locate executable folder:", err)
+			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			break
+		}
+		cmd := exec.Command(exePath + "/print.exe", f.Name())
 		err = cmd.Start()
 		if err != nil {
 			log.Println("start cmd:", err)
