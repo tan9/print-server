@@ -60,7 +60,7 @@ func (p *program) Start(s service.Service) error {
 }
 
 func (p *program) run() {
-	logger.Infof("I'm running %v.", service.Platform())
+	logger.Infof("Service running %v.", service.Platform())
 
 	exePath, err := osext.ExecutableFolder()
 	if err != nil {
@@ -85,7 +85,8 @@ func (p *program) run() {
 
 func (p *program) Stop(s service.Service) error {
 	// Any work in Stop should be quick, usually a few seconds at most.
-	logger.Info("I'm Stopping!")
+	log.Printf("Server stopping.")
+	logger.Info("Service Stopping!")
 	close(p.exit)
 	return nil
 }
