@@ -1,20 +1,19 @@
 # WebSocket Print Server
 
-Simple WebSocket server that receives PDF content and print it out using Foxit Reader. You can use this simple implementation to silet print PDF document to your default printer from web pages.
+Simple WebSocket server that receives PDF content and print it out using Adobe Acrobat Reader. You can use this simple implementation to silent print PDF document to your default printer from web pages.
 
 
 ## Prerequisites
-1. Must have [Foxit Reader](https://www.foxitsoftware.com/products/pdf-reader/) 6.2.3 Windows version installed at `C:\Program Files (x86)\Foxit Software\Foxit Reader\Foxit Reader.exe`. 
-  * You can get that version at [Old Apps](http://www.oldapps.com/foxit_reader.php).
-  * **DO NOT** use 7.x, the process will not be terminated automatically after silent printing.
-
+1. Windows environment.
+2. Have [Adobe Acrobat Reader](https://get.adobe.com/reader/) installed. 
+  * Tested on Acrobat Reader DC 2015 and Adobe Reader X.
 
 ## Interface
-The server will listen on `localhost:9180`, you can access http://localhost:9180 to checek the server is up or not.
-You can then connect to WebSocket server listen at `ws://localhost:9180/print`.
+The server will listen on `localhost:9180`, you can access http://localhost:9180 to check whether the server is up or down.
+You can then connect to the WebSocket server listen at `ws://localhost:9180/print`.
 
 ### Request Message
-After the WebSocket connetion is estableashed successfully, you can send stringified JSON with following structure to print:
+After the WebSocket connection is established successfully, you can send stringified JSON with following structure to print:
 
 ```json
 {
