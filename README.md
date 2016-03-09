@@ -49,6 +49,13 @@ In case of failed to print:
 ```
 
 ## Development
+
+### Compiling print-server.go
 1. Install Go as described [here](https://golang.org/doc/install).
-2. Install [Gorilla WebSocket](https://github.com/gorilla/websocket) using `go get github.com/gorilla/websocket`.
-3. Run `go run print-server.go` to start server.
+2. Install [Gorilla WebSocket](https://github.com/gorilla/websocket) by executing `go get github.com/gorilla/websocket`.
+3. Install [kardianos/service](https://github.com/kardianos/service) by executing `go get github.com/kardianos/service`.
+4. Run `go run print-server.go` to start server.
+
+### Compiling print.au3
+1. Install [AutoIt](https://www.autoitscript.com/site/)
+2. Compile `print.au3` using Aut2Exe to compile it to executable as described [here](https://www.autoitscript.com/autoit3/docs/intro/compiler.htm).
