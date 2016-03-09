@@ -14,7 +14,10 @@ import (
 	"os/exec"
 
 	"github.com/gorilla/websocket"
+	"github.com/kardianos/service"
 )
+
+var logger service.Logger
 
 var addr = flag.String("addr", "localhost:9180", "http service address")
 
@@ -34,6 +37,51 @@ type Response struct {
 	Id      string `json:"id"`
 	Success bool `json:"success"`
 	Message string `json:"message"`
+}
+
+// Program structures.
+//  Define Start and Stop methods.
+type program struct {
+	exit chan struct{}
+}
+
+func (p *program) Start(s service.Service) error {
+	if service.Interactive() {
+		logger.Info("Running in terminal.")
+	} else {
+		logger.Info("Running under service manager.")
+	}
+	p.exit = make(chan struct{})
+
+	// Start should not block. Do the actual work async.
+	go p.run()
+	return nil
+}
+
+func (p *program) run() {
+	logger.Infof("I'm running %v.", service.Platform())
+
+	f, err := os.OpenFile("print-server.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
+	log.SetFlags(log.Ldate + log.Ltime + log.Lmicroseconds)
+
+	http.HandleFunc("/print", print)
+	http.HandleFunc("/", home)
+
+	log.Printf("Server started-up and listening at %s.", *addr)
+	log.Fatal(http.ListenAndServe(*addr, nil))
+}
+
+func (p *program) Stop(s service.Service) error {
+	// Any work in Stop should be quick, usually a few seconds at most.
+	logger.Info("I'm Stopping!")
+	close(p.exit)
+	return nil
 }
 
 func print(w http.ResponseWriter, r *http.Request) {
@@ -105,22 +153,51 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	svcFlag := flag.String("service", "", "Control the system service.")
 	flag.Parse()
 
-	f, err := os.OpenFile("print-server.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
+	svcConfig := &service.Config{
+		Name:        "GoPrintServer",
+		DisplayName: "Go Print Server",
+		Description: "Expose printer control as WebSocket server.",
 	}
-	defer f.Close()
 
-	log.SetOutput(f)
-	log.SetFlags(log.Ldate + log.Ltime + log.Lmicroseconds)
+	prg := &program{}
+	s, err := service.New(prg, svcConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger, err = s.Logger(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	errs := make(chan error, 5)
+	logger, err = s.Logger(errs)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	http.HandleFunc("/print", print)
-	http.HandleFunc("/", home)
+	go func() {
+		for {
+			err := <-errs
+			if err != nil {
+				log.Print(err)
+			}
+		}
+	}()
 
-	log.Printf("Server started-up and listening at %s.", *addr)
-	log.Fatal(http.ListenAndServe(*addr, nil))
+	if len(*svcFlag) != 0 {
+		err := service.Control(s, *svcFlag)
+		if err != nil {
+			log.Printf("Valid actions: %q\n", service.ControlAction)
+			log.Fatal(err)
+		}
+		return
+	}
+	err = s.Run()
+	if err != nil {
+		logger.Error(err)
+	}
 }
 
 var homeTemplate = template.Must(template.New("").Parse(`
