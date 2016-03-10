@@ -72,3 +72,9 @@ crashlytics.properties
 crashlytics-build.properties
 
 # Created by .ignore support plugin (hsz.mobi)
+
+## Compiled and generated artifacts
+print.exe
+print-server.log
+print-server
+print-server.exe
