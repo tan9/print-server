@@ -30,7 +30,7 @@ const (
 
 	PrintHelperMissingArgument = 71
 	PrintHelperOpenAdobeReaderError = 72
-	PrintHelperLocateAcrobateDdeError = 73
+	PrintHelperLocateAcrobatDdeError = 73
 	PrintHelperPrintError = 74
 	PrintHelperError = 79
 )
@@ -190,7 +190,7 @@ func print(w http.ResponseWriter, r *http.Request) {
 					case 2:
 						code = PrintHelperOpenAdobeReaderError
 					case 3:
-						code = PrintHelperLocateAcrobateDdeError
+						code = PrintHelperLocateAcrobatDdeError
 					case 4:
 						code = PrintHelperPrintError
 					default:
