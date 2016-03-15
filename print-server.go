@@ -189,7 +189,7 @@ func print(w http.ResponseWriter, r *http.Request) {
 						code = PrintHelperMissingArgument
 					case 2:
 						code = PrintHelperOpenAdobeReaderError
-					case 2:
+					case 3:
 						code = PrintHelperLocateAcrobateDdeError
 					case 4:
 						code = PrintHelperPrintError
