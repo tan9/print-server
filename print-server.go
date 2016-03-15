@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"syscall"
 
 	"encoding/json"
 	"encoding/base64"
@@ -17,6 +18,21 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kardianos/osext"
 	"github.com/kardianos/service"
+)
+
+const (
+	Success = 0
+
+	MessageFormatError = 51
+	TemporaryFileWriteError = 52
+	PrintHelperNotFound = 53
+	PrintHelperInvokeError = 54
+
+	PrintHelperMissingArgument = 71
+	PrintHelperOpenAdobeReaderError = 72
+	PrintHelperLocateAcrobateDdeError = 73
+	PrintHelperPrintError = 74
+	PrintHelperError = 79
 )
 
 var logger service.Logger
@@ -38,6 +54,7 @@ type Message struct {
 type Response struct {
 	Id      string `json:"id"`
 	Success bool `json:"success"`
+	Code    int `json:"code"`
 	Message string `json:"message"`
 }
 
@@ -107,6 +124,7 @@ func print(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.Close()
+
 	for {
 		_, message, err := c.ReadMessage()
 		if err != nil {
@@ -115,17 +133,16 @@ func print(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var m Message
-		err = json.Unmarshal(message, &m)
-		if err != nil {
+		if err = json.Unmarshal(message, &m); err != nil {
 			log.Println("unmarshal:", err)
 			break
 		}
-		log.Printf("recv: %s", m.Id)
+		log.Printf("received: %s", m.Id)
 
 		pdf, err := base64.StdEncoding.DecodeString(m.Body)
 		if (err != nil) {
 			log.Println("decoding:", err)
-			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			c.WriteJSON(Response{Id: m.Id, Success: false, Code: MessageFormatError, Message: err.Error()});
 			break
 		}
 
@@ -133,36 +150,64 @@ func print(w http.ResponseWriter, r *http.Request) {
 		l, err := f.Write(pdf);
 		if err != nil {
 			log.Println("write file:", err)
-			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			c.WriteJSON(Response{Id: m.Id, Success: false, Code: TemporaryFileWriteError, Message: err.Error()});
 			break
 		}
 		f.Close()
-		log.Printf("write: %s of %d bytes", f.Name(), l)
+		log.Printf("wrote: %s of %d bytes", f.Name(), l)
 
+		log.Printf("locating print helper...")
 		exePath, err := osext.ExecutableFolder()
 		if err != nil {
 			log.Println("failed to locate executable folder:", err)
-			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			c.WriteJSON(Response{Id: m.Id, Success: false, Code: PrintHelperNotFound, Message: err.Error()});
 			break
 		}
 		cmd := exec.Command(exePath + "/print.exe", f.Name())
-		err = cmd.Start()
-		if err != nil {
+		if err = cmd.Start(); err != nil {
 			log.Println("start cmd:", err)
-			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			c.WriteJSON(Response{Id: m.Id, Success: false, Code: PrintHelperInvokeError, Message: err.Error()});
 			break
 		}
+
 		log.Printf("printing...")
-		err = cmd.Wait()
-		if err != nil {
+		if err = cmd.Wait(); err != nil {
+			var code int
+
+			// http://stackoverflow.com/a/10385867/3440376
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				// The program has exited with an exit code != 0
+
+				// This works on both Unix and Windows. Although package
+				// syscall is generally platform dependent, WaitStatus is
+				// defined for both Unix and Windows and in both cases has
+				// an ExitStatus() method with the same signature.
+				if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+					c := status.ExitStatus();
+					switch c {
+					case 1:
+						code = PrintHelperMissingArgument
+					case 2:
+						code = PrintHelperOpenAdobeReaderError
+					case 2:
+						code = PrintHelperLocateAcrobateDdeError
+					case 4:
+						code = PrintHelperPrintError
+					default:
+						code = PrintHelperError
+					}
+				}
+			} else {
+				code = PrintHelperError
+			}
+
 			log.Println("print failed:", err)
-			c.WriteJSON(Response{Id: m.Id, Success: false, Message: err.Error()});
+			c.WriteJSON(Response{Id: m.Id, Success: false, Code: code, Message: err.Error()});
 			break
 		}
 
 		log.Println("print success:", m.Id)
-		err = c.WriteJSON(Response{Id: m.Id, Success: true})
-		if err != nil {
+		if err = c.WriteJSON(Response{Id: m.Id, Success: true, Code: Success}); err != nil {
 			log.Println("write:", err)
 			break
 		}
