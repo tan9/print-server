@@ -78,3 +78,4 @@ print.exe
 print-server.log
 print-server
 print-server.exe
+logs/
