@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 
 	"encoding/json"
 	"encoding/base64"
@@ -67,9 +68,17 @@ func (p *program) run() {
 		log.Fatal(err)
 	}
 
-	f, err := os.OpenFile(exePath + "/print-server.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if _, err := os.Stat(exePath + "/logs"); os.IsNotExist(err) {
+		err = os.Mkdir(exePath + "/logs", 0766)
+		if err != nil {
+			log.Fatalf("error creating logs folder: %v", err)
+		}
+	}
+
+	ts := time.Now().Local().Format("2006-01-02")
+	f, err := os.OpenFile(exePath + "/logs/print-server-" + ts + ".log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("error opening file: %v", err)
+		log.Fatalf("error opening log file: %v", err)
 	}
 	defer f.Close()
 
