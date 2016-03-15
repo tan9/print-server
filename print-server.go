@@ -172,7 +172,7 @@ func print(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("printing...")
 		if err = cmd.Wait(); err != nil {
-			var code int
+			var code = PrintHelperError
 
 			// http://stackoverflow.com/a/10385867/3440376
 			if exitErr, ok := err.(*exec.ExitError); ok {
@@ -197,8 +197,6 @@ func print(w http.ResponseWriter, r *http.Request) {
 						code = PrintHelperError
 					}
 				}
-			} else {
-				code = PrintHelperError
 			}
 
 			log.Println("print failed:", err)
