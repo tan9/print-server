@@ -31,16 +31,27 @@ EndIf
 ; Find out the Acrobat DDE Service
 Sleep(500)
 
-Local $aServiceName[8]
+Local $aServiceName[19]
 
-$aServiceName[0] = "AcroviewR15" ; Acrobat Reader DC 2015
-$aServiceName[1] = "AcroviewR11" ; Adobe Reader XI
-$aServiceName[2] = "AcroviewR10" ; Adobe Reader X
-$aServiceName[3] = "Acroview"    ; Acrobat Reader 9 and below
-$aServiceName[4] = "AcroviewR16"
-$aServiceName[5] = "AcroviewR17"
-$aServiceName[6] = "AcroviewR18"
-$aServiceName[7] = "AcroviewR19"
+$aServiceName[0] = "AcroviewR20" ; Acrobat Reader DC 2020
+$aServiceName[1] = "AcroviewR21"
+$aServiceName[2] = "AcroviewR22"
+$aServiceName[3] = "AcroviewR23"
+$aServiceName[4] = "AcroviewR24"
+$aServiceName[5] = "AcroviewR25"
+$aServiceName[6] = "AcroviewR26"
+$aServiceName[7] = "AcroviewR27"
+$aServiceName[8] = "AcroviewR28"
+$aServiceName[9] = "AcroviewR29"
+$aServiceName[10] = "AcroviewR30"
+$aServiceName[11] = "AcroviewR15" ; Acrobat Reader DC 2015
+$aServiceName[12] = "AcroviewR11" ; Adobe Reader XI
+$aServiceName[13] = "AcroviewR10" ; Adobe Reader X
+$aServiceName[14] = "Acroview"    ; Acrobat Reader 9 and below
+$aServiceName[15] = "AcroviewR16"
+$aServiceName[16] = "AcroviewR17"
+$aServiceName[17] = "AcroviewR18"
+$aServiceName[18] = "AcroviewR19"
 
 Global $szTopic = "Control"
 Global $szService = ""
